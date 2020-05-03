@@ -11,10 +11,10 @@
         {{ form.hidden_tag() }}
 
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">Main Page</legend>
+            <legend class="border-bottom mb-4">Mindful Me</legend>
 
             <div class = "form-group">
-                <h1>Video</h1>
+                <h1>Realtime Emotion</h1>
                 <img id="bg" src="{{ url_for('users.video_feed') }}">
             </div>
         
@@ -49,9 +49,14 @@
 
 
         <div class="form-group">
-
+            {{ form.csrf_token }} 
             {{ form.submit(class="btn btn-outline-info") }}
 
+        </div>
+
+        <div class = "form-group">
+            <h1>Analysis</h1>
+            <img id="bg" src="{{ graph }}">
         </div>
 
     </form>
