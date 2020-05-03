@@ -7,6 +7,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r'SA.json'
 
 faceCascade=cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
+faceArray = []
 def detect_faces(path):
     """Detects faces in an image."""
     from google.cloud import vision
@@ -24,17 +25,15 @@ def detect_faces(path):
     # Names of likelihood from google.cloud.vision.enums
     likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
                        'LIKELY', 'VERY_LIKELY')
-    print('Faces:')
 
     for face in faces:
-        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
-        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
-        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
 
         vertices = (['({},{})'.format(vertex.x, vertex.y)
                     for vertex in face.bounding_poly.vertices])
 
-        print('face bounds: {}'.format(','.join(vertices)))
+        #[face bounds, anger, joy, surprise, sorrow] 
+        faceArray = [(vertices), likelihood_name[face.anger_likelihood], likelihood_name[face.joy_likelihood],  likelihood_name[face.surprise_likelihood], likelihood_name[face.sorrow_likelihood]]
+        return faceArray
 
     if response.error.message:
         raise Exception(
@@ -51,6 +50,7 @@ class VideoCamera(object):
         self.video.release()
 
     def change_frame(self):
+        global faceArray
         ret, frame = self.video.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -58,8 +58,12 @@ class VideoCamera(object):
 
         for (x, y, w, h) in face:
             cv2.rectangle(frame, (x, y), (w+x, h+y), (200, 50, 30), 2)
+            cropped_face = frame[y:h+y, x:w+x]
+            cv2.imwrite('./faces/currentface.jpg', cropped_face)
         
-        detect_faces("./face.jpg")
+        detect_faces("./faces/currentface.jpg")
+
+  
         ret, jpeg = cv2.imencode('.jpg', frame)
         return jpeg.tobytes()
 
