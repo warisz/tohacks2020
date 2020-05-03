@@ -1,5 +1,6 @@
-from flask import render_template, Blueprint
+from flask import render_template, Blueprint, Response
 from user.forms import UserForm
+from camera import VideoCamera
 
 users = Blueprint('users', __name__)
 
@@ -13,3 +14,15 @@ def index():
         pass
 
     return render_template("test.html", form = form)
+
+def gen(camera):
+    while True:
+        frame = camera.change_frame()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+               
+
+@users.route('/video_feed')
+def video_feed():
+    return Response(gen(VideoCamera()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
